@@ -8,11 +8,16 @@ const cartItem = computed(() => store.cart.find(i => i._id === props.food._id));
 const qty = computed(() => cartItem.value?.qty || 0);
 
 const imageUrl = computed(() => {
-  if (!props.food.image || props.food.image === 'default.png') {
-    return 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80';
+  if (!props.food.image || props.food.image === "default.png") {
+    return "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80";
   }
-  if (props.food.image.startsWith('http')) return props.food.image;
-  const baseUrl = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://localhost:5000';
+  if (props.food.image.startsWith("http")) return props.food.image;
+
+  const baseUrl =
+    import.meta.env.MODE === "production"
+      ? "https://restaurent-tiz5.onrender.com"
+      : "http://localhost:5000";
+
   return `${baseUrl}/uploads/${props.food.image}`;
 });
 </script>

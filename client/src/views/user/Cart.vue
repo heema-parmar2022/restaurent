@@ -1,4 +1,5 @@
 <script setup>
+import { ref } from "vue";
 import { useUserStore } from "../../stores/userStore";
 import { useRouter } from "vue-router";
 import { toast } from 'vue3-toastify';
@@ -6,17 +7,22 @@ import 'vue3-toastify/dist/index.css';
 
 const store = useUserStore();
 const router = useRouter();
+const isPlacingOrder = ref(false);
 
 const total = () =>
   store.cart.reduce((s, i) => s + i.price * i.qty, 0);
 
 const place = async () => {
+  if (isPlacingOrder.value) return;
+  
+  isPlacingOrder.value = true;
   try {
     await store.placeOrder();
     toast.success("Success! Your order has been placed.", { autoClose: 2500, position: toast.POSITION.TOP_CENTER });
     setTimeout(() => router.push(`/status`), 1000);
   } catch (err) {
     toast.error(err.message || "Failed to place order.", { autoClose: 4000, position: toast.POSITION.TOP_CENTER });
+    isPlacingOrder.value = false;
   }
 };
 </script>
@@ -59,9 +65,15 @@ const place = async () => {
           </div>
         </div>
 
-        <button @click="place" class="mt-8 flex justify-between items-center w-full bg-indigo-600 hover:bg-indigo-700 transition text-white px-6 py-4 rounded-xl font-bold shadow-md text-lg">
+        <button 
+          @click="place" 
+          :disabled="isPlacingOrder"
+          class="mt-8 flex justify-between items-center w-full transition text-white px-6 py-4 rounded-xl font-bold shadow-md text-lg"
+          :class="isPlacingOrder ? 'bg-gray-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'"
+        >
           <span>₹{{ total() }}</span>
-          <span>Place Order <span class="ml-2 font-normal">→</span></span>
+          <span v-if="isPlacingOrder">Placing Order...</span>
+          <span v-else>Place Order <span class="ml-2 font-normal">→</span></span>
         </button>
       </div>
     </div>
