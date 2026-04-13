@@ -28,7 +28,7 @@ const formError = ref("");
 const baseURL =
   typeof window !== "undefined" && window.location.hostname === "localhost"
     ? "http://localhost:5000"
-    : "https://restaurent-eight-ochre.vercel.app";
+    : "https://restaurent-tiz5.onrender.com";
 const validateForm = (data) => {
   if (!data.name) return "Name is required";
   if (!data.price) return "Price is required";
