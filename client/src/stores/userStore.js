@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import { ref } from "vue";
 import api from "../api/api";
 
 const loadCart = () => {
@@ -10,79 +11,95 @@ const saveCart = (cart) => {
   localStorage.setItem("restaurant_cart", JSON.stringify(cart));
 };
 
-export const useUserStore = defineStore("user", {
-  state: () => ({
-    userId: localStorage.getItem("restaurant_userId") || (() => {
+export const useUserStore = defineStore("user", () => {
+
+  const userId = ref(
+    localStorage.getItem("restaurant_userId") || (() => {
       const id = crypto.randomUUID();
       localStorage.setItem("restaurant_userId", id);
       return id;
-    })(),
-    cart: loadCart(),
-    orders: [],
-    loading: false,
-    error: null,
-  }),
+    })()
+  );
 
-  actions: {
-    add(food) {
-      const item = this.cart.find(i => i._id === food._id);
-      if (item) {
-        item.qty++;
-      } else {
-        this.cart.push({ ...food, qty: 1 });
-      }
-      saveCart(this.cart);
-    },
+  const cart = ref(loadCart());
+  const orders = ref([]);
+  const loading = ref(false);
+  const error = ref(null);
 
-    decrease(foodId) {
-      const item = this.cart.find(i => i._id === foodId);
-      if (!item) return;
+  function add(food) {
+    const item = cart.value.find(i => i._id === food._id);
 
-      if (item.qty > 1) {
-        item.qty--;
-      } else {
-        this.cart = this.cart.filter(i => i._id !== foodId);
-      }
-      saveCart(this.cart);
-    },
+    if (item) {
+      item.qty++;
+    } else {
+      cart.value.push({ ...food, qty: 1 });
+    }
 
-    clearCart() {
-      this.cart = [];
-      saveCart(this.cart);
-    },
+    saveCart(cart.value);
+  }
 
-    async fetchMyOrder() {
-      try {
-        const res = await api.get(`/orders/user/${this.userId}`);
-        this.orders = Array.isArray(res.data) ? res.data : [];
-      } catch (err) {
-        console.error("No active order fetched.");
-        this.orders = [];
-      }
-    },
+  function decrease(foodId) {
+    const item = cart.value.find(i => i._id === foodId);
+    if (!item) return;
 
-    async placeOrder() {
-      try {
-        this.loading = true;
-        this.error = null;
+    if (item.qty > 1) {
+      item.qty--;
+    } else {
+      cart.value = cart.value.filter(i => i._id !== foodId);
+    }
 
-        const payload = {
-          userId: this.userId,
-          items: this.cart.map(i => ({ _id: i._id, qty: i.qty })),
-        };
+    saveCart(cart.value);
+  }
 
-        const res = await api.post("/orders", payload);
+  function clearCart() {
+    cart.value = [];
+    saveCart(cart.value);
+  }
 
-        await this.fetchMyOrder();
-        this.clearCart();
+  async function fetchMyOrder() {
+    try {
+      const res = await api.get(`/orders/user/${userId.value}`);
+      orders.value = Array.isArray(res.data) ? res.data : [];
+    } catch (err) {
+      console.error("No active order fetched.");
+      orders.value = [];
+    }
+  }
 
-      } catch (err) {
-        console.error("ORDER ERROR:", err);
-        this.error = err.response?.data?.msg || "Failed to place order.";
-        throw new Error(this.error);
-      } finally {
-        this.loading = false;
-      }
-    },
-  },
+  async function placeOrder() {
+    try {
+      loading.value = true;
+      error.value = null;
+
+      const payload = {
+        userId: userId.value,
+        items: cart.value.map(i => ({ _id: i._id, qty: i.qty })),
+      };
+
+      await api.post("/orders", payload);
+
+      await fetchMyOrder();
+      clearCart();
+
+    } catch (err) {
+      console.error("ORDER ERROR:", err);
+      error.value = err.response?.data?.msg || "Failed to place order.";
+      throw new Error(error.value);
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  return {
+    userId,
+    cart,
+    orders,
+    loading,
+    error,
+    add,
+    decrease,
+    clearCart,
+    fetchMyOrder,
+    placeOrder,
+  };
 });
