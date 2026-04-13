@@ -25,7 +25,10 @@ const imageFile = ref(null);
 const editImageFile = ref(null);
 
 const formError = ref("");
-
+const baseURL =
+  typeof window !== "undefined" && window.location.hostname === "localhost"
+    ? "http://localhost:5000"
+    : "https://restaurent-eight-ochre.vercel.app";
 const validateForm = (data) => {
   if (!data.name) return "Name is required";
   if (!data.price) return "Price is required";
@@ -219,7 +222,7 @@ onMounted(fetch);
               <td class="p-2">
                 <img
                   v-if="f.image"
-                  :src="`http://localhost:5000/uploads/${f.image}`"
+                  :src="`${baseURL}/uploads/${f.image}`"
                   class="w-10 h-10 sm:w-12 sm:h-12 rounded object-cover mx-auto"
                 />
               </td>
