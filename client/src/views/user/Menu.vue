@@ -22,24 +22,16 @@ onMounted(async () => {
   const f = await api.get("/foods?limit=1000");
   const c = await api.get("/categories");
 
-  const rawFoods = Array.isArray(f.data) ? f.data : f.data.data || [];
-  const rawCategories = Array.isArray(c.data) ? c.data : c.data.data || [];
+  const rFoods = Array.isArray(f.data) ? f.data : f.data.data || [];
+  const rCategories = Array.isArray(c.data) ? c.data : c.data.data || [];
 
-  categories.value = rawCategories.filter(cat => cat.isActive !== false);
-  foods.value = rawFoods.filter(f => !f.category || f.category.isActive !== false);
+  categories.value = rCategories.filter(cat => cat.isActive !== false);
+  foods.value = rFoods.filter(f => !f.category || f.category.isActive !== false);
 
   loading.value = false;
 });
 
-const specials = computed(() =>
-  foods.value.filter(f => f.isSpecial && (!selected.value || f.category?._id === selected.value))
-);
-
-const regularFoods = computed(() =>
-  foods.value.filter(f => !f.isSpecial && (!selected.value || f.category?._id === selected.value))
-);
-
-// Artificial loader when changing categories
+// loader when changing categories
 const changeCategory = async (catId) => {
   loading.value = true;
   await new Promise(resolve => setTimeout(resolve, 400)); // 400ms delay
