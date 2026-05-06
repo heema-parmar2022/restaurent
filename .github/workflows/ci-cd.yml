@@ -1,0 +1,61 @@
+name: Render CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # Step 1: Clone Repository
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Step 2: Setup Node.js
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      # =========================
+      # FRONTEND BUILD
+      # =========================
+
+      - name: Install Frontend Dependencies
+        run: |
+          cd client
+          npm install
+
+      - name: Build Frontend
+        run: |
+          cd client
+          npm run build
+
+      # =========================
+      # BACKEND BUILD
+      # =========================
+
+      - name: Install Backend Dependencies
+        run: |
+          cd server
+          npm install
+
+      # Optional Backend Test
+      # Uncomment if you have tests
+
+      # - name: Run Backend Tests
+      #   run: |
+      #     cd server
+      #     npm test
+
+      # =========================
+      # DEPLOY TO RENDER
+      # =========================
+
+      - name: Trigger Render Deployment
+        run: |
+          curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}

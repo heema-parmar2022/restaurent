@@ -26,6 +26,10 @@ export const useUserStore = defineStore("user", () => {
   const loading = ref(false);
   const error = ref(null);
 
+  //   const cartCount = computed(() =>
+  //   cart.value.reduce((total, item) => total + item.qty, 0)
+  // ); // store.cartCount
+
   function add(food) {
     const item = cart.value.find(i => i._id === food._id);
 
