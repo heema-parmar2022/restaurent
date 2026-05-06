@@ -2,6 +2,7 @@ const Food = require("../models/Food");
 
 exports.getFoods = async (req, res) => {
   try {
+    console.log("CI/CD working");
     const { page = 1, limit = 10, special } = req.query;
 
     const query = {};
