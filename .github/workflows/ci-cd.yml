@@ -1,4 +1,4 @@
-name: Render CI/CD Pipeline
+name: Full Stack CI/CD Pipeline
 
 on:
   push:
@@ -11,15 +11,35 @@ jobs:
 
     steps:
 
-      # Checkout Repository
+      # =========================
+      # CHECKOUT CODE
+      # =========================
+
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # Setup Node.js
+      # =========================
+      # SETUP NODE
+      # =========================
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
+
+      # =========================
+      # FRONTEND BUILD
+      # =========================
+
+      - name: Install Frontend Dependencies
+        run: |
+          cd client
+          npm install
+
+      - name: Build Frontend
+        run: |
+          cd client
+          npm run build
 
       # =========================
       # BACKEND BUILD
@@ -37,3 +57,11 @@ jobs:
       - name: Trigger Render Deployment
         run: |
           curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
+
+      # =========================
+      # DEPLOY TO VERCEL
+      # =========================
+
+      - name: Trigger Vercel Deployment
+        run: |
+          curl -X POST ${{ secrets.VERCEL_DEPLOY_HOOK }}
